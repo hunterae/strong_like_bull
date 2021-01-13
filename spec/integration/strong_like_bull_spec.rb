@@ -2,19 +2,20 @@ require "spec_helper"
 require "action_controller"
 
 describe "StrongLikeBull" do
-  before :each do
-    @object = Object.new
-    @object.extend(StrongLikeBull)
-  end
+  subject {
+    Object.new.tap do |object|
+      object.extend(StrongLikeBull)
+    end
+  }
 
   it "should be able to suggest the appropriate format for the example from http://www.railsexperiments.com/using-strong-parameters-with-nested-forms/" do
     inner_params = HashWithIndifferentAccess.new username: "john", data: { foo: "bar" }
     expected_format = [:username, data: [:foo]]
     params = ActionController::Parameters.new(user: inner_params)
     # sanity check that our expected format indeed does extract the inner_params out
-    expect(params.require(:user).permit(expected_format)).to eql inner_params
-    @object.expects(:params).returns params
-    expect(@object.suggested_strong_parameters_format(:user)).to eql expected_format
+    expect(params.require(:user).permit(expected_format)).to match_hash inner_params
+    allow(subject).to receive(:params).and_return params
+    expect(subject.suggested_strong_parameters_format(:user)).to eql expected_format
   end
 
   it "should be able to suggest the appropriate format for the nested params example from https://github.com/rails/strong_parameters/" do
@@ -24,9 +25,9 @@ describe "StrongLikeBull" do
     expected_format = [:name, {:emails => []}, :friends => [ :name, { :family => [ :name ] },  { :hobbies => [] }]]
     params = ActionController::Parameters.new(user: inner_params )
     # sanity check that our expected format indeed does extract the inner_params out
-    expect(params.require(:user).permit(expected_format)).to eql inner_params
-    @object.expects(:params).returns params
-    expect(@object.suggested_strong_parameters_format(:user)).to eql expected_format
+    expect(params.require(:user).permit(expected_format)).to match_hash inner_params
+    allow(subject).to receive(:params).and_return params
+    expect(subject.suggested_strong_parameters_format(:user)).to eql expected_format
   end
 
   it "should be able to suggest the appropriate format for a complex example from work (with field names randomized)" do
@@ -45,9 +46,9 @@ describe "StrongLikeBull" do
                        {:random_field_18=>[:random_field_19, :value, :id, {:random_field_20=>[:id]}]}]
     params = ActionController::Parameters.new(variant: inner_params )
     # sanity check that our expected format indeed does extract the inner_params out
-    expect(params.require(:variant).permit(expected_format)).to eql inner_params
-    @object.expects(:params).returns params
-    expect(@object.suggested_strong_parameters_format(:variant)).to eql expected_format
+    expect(params.require(:variant).permit(expected_format)).to match_hash inner_params
+    allow(subject).to receive(:params).and_return params
+    expect(subject.suggested_strong_parameters_format(:variant)).to eql expected_format
   end
 
   it "should be able to suggest the appropriate format for a second complex example from work (with field names randomized)" do
@@ -81,9 +82,9 @@ describe "StrongLikeBull" do
                        :random_field_33, {:random_field_34 => [:title_tag, :description, :h1]}]
     params = ActionController::Parameters.new(product: inner_params )
     # sanity check that our expected format indeed does extract the inner_params out
-    expect(params.require(:product).permit(expected_format)).to eql inner_params
-    @object.expects(:params).returns params
-    expect(@object.suggested_strong_parameters_format(:product)).to eql expected_format
+    expect(params.require(:product).permit(expected_format)).to match_hash inner_params
+    allow(subject).to receive(:params).and_return params
+    expect(subject.suggested_strong_parameters_format(:product)).to eql expected_format
   end
 
   it "should be able to suggest the appropriate format for a third complex example from work (with field names randomized)" do
@@ -166,21 +167,25 @@ describe "StrongLikeBull" do
                          :random_field_91, :random_field_92, {:random_field_93=>[:random_field_94, :_destroy, :id, :random_field_98, :random_field_97, :random_field_95, :random_field_96]},
                          {:random_field_102=>[:random_field_20, :random_field_21, :random_field_22, :random_field_23, :random_field_24, :random_field_25, :random_field_97, :random_field_85, :id, :_destroy]}, :random_field_99, :random_field_100, :random_field_101,
                          {:random_field_103=>[:random_field_104, :random_field_105, :random_field_106]}, :random_field_107]
-    @object.expects(:params).returns params
+    allow(subject).to receive(:params).and_return params
     # sanity check that our expected format indeed does extract the inner_params out
-    expect(params.require(:product).permit(expected_format)).to eql inner_params
-    expect(@object.suggested_strong_parameters_format(:product)).to eql expected_format
+    expect(params.require(:product).permit(expected_format)).to match_hash inner_params
+    expect(subject.suggested_strong_parameters_format(:product)).to eql expected_format
   end
 
   it "should combine the attributes of nested hashes" do
-    inner_params = HashWithIndifferentAccess.new :products => [{:id => 50, :name => "Name 1"},
-                                                               {:id => 51, :name => "Name 2", :description => "My description"},
-                                                               {:name => "Name 3", :caption => "My caption"}]
-    params = ActionController::Parameters.new(object: inner_params )
+    inner_params = {
+      products: [
+        {:id => 50, :name => "Name 1"},
+        {:id => 51, :name => "Name 2", :description => "My description"},
+        {:name => "Name 3", :caption => "My caption"}
+      ]
+    }
+    params = ActionController::Parameters.new(object: inner_params)
     expected_format = [{:products => [:id, :name, :description, :caption]}]
-    @object.expects(:params).returns params
+    allow(subject).to receive(:params).and_return params
     # sanity check that our expected format indeed does extract the inner_params out
-    expect(params.require(:object).permit(expected_format)).to eql inner_params
-    expect(@object.suggested_strong_parameters_format(:object)).to eql expected_format
+    expect(params.require(:object).permit(expected_format)).to match_hash inner_params
+    expect(subject.suggested_strong_parameters_format(:object)).to eql expected_format
   end
 end

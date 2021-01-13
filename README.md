@@ -21,13 +21,14 @@ Or install it yourself as:
 ## Usage
 
 In application_controller.rb or a specific controller, add the following line:
+
     include StrongLikeBull
 
 In any controller action where you want a recommendation for the strong parameters permitted parameters based on the request parameters, add the following inside the action:
 
     def CONTROLLER_ACTION
-        log_suggested_strong_parameters_format(PARAMETER_NAME_TO_INSPECT)
-        # perform action
+      log_suggested_strong_parameters_format(PARAMETER_NAME_TO_INSPECT)
+      # perform action
     end
 
 When the controller action gets hit, it will log the recommended strong params permitted params to use in the following format:
@@ -44,8 +45,8 @@ StrongLikeBull only serves to recommend params to permit based on what is passed
 If you wanted the recommended params to permit for the update action of a Posts Controller, it would like:
 
     def update
-        log_suggested_strong_parameters_format(:post)
-        # perform update
+      log_suggested_strong_parameters_format(:post)
+      # perform update
     end
 
 The above example would assume the a a parameter is passed to the controller called "post" which contained all the fields we want to permit. The request parameters might look something like this:
@@ -59,6 +60,6 @@ If those request parameters were passed to the update action above, we'd see the
 Using that suggested format, we could then modify our update action to the following:
 
     def update
-        permitted_params = params.require(:post).permit [:name, {:tags=>[]}, :description]
-        # perform update
+      permitted_params = params.require(:post).permit [:name, {:tags=>[]}, :description]
+      # perform update
     end

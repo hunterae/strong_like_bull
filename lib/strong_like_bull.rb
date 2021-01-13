@@ -6,13 +6,14 @@ module StrongLikeBull
   end
 
   def suggested_strong_parameters_format(key)
-    hash = params[key]
+    hash = params.respond_to?(:to_unsafe_h) ? params.to_unsafe_h : params
+    hash = hash[key]
     recursive_suggested_strong_parameters_format(hash) if hash
   end
 
   private
   def recursive_suggested_strong_parameters_format(object)
-    if object.is_a? Hash
+    if object.is_a?(Hash)
       if object.keys.first.match(/^\d+$/)
         hash = {}
         object.values.each do |value|
